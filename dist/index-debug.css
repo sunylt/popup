@@ -1,0 +1,40 @@
+/*! define ~/popup/1.0.0/index-debug.css */
+.x-popup-main{
+  position: absolute;
+  border: 1px solid #cccccc;
+  background-color: #ffffff;
+  z-index: 1111;
+  border-radius: 4px;
+}
+
+.x-popup-title{
+  font-size: 14px;
+  font-weight: bold;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 15px;
+}
+
+.x-popup-close{
+  color: #999;
+  cursor: pointer;
+  font-family: tahoma;
+  font-size: 24px;
+  height: 18px;
+  line-height: 18px;
+  overflow: hidden;
+  position: absolute;
+  right: 12px;
+  text-decoration: none;
+  top: 8px;
+  width: 18px;
+  text-align: center;
+  z-index: 10;
+}
+
+.x-popup-close:hover{
+  color: #666;
+}
+
+.x-popup-content{
+  
+}

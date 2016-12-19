@@ -1,0 +1,18 @@
+{
+  "family": "~",
+  "name": "popup",
+  "version": "1.0.0",
+  "description": "A smart popup for web",
+  "main": "./src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "spm": {
+    "output": [
+      "index.css",
+      "index.js"
+    ]
+  },
+  "author": "10666779@qq.com",
+  "license": "ISC"
+}
