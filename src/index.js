@@ -25,22 +25,21 @@
   
   var pt = Popup.prototype;
   
-  // 默认显示
-  pt._visible = true;
+  // 默认不显示
+  pt._visible = false;
   
   pt.init = function(config) {
-    var that = this;
+    var that = this,
+        DOM = that.DOM;
     
+    DOM.main.attr('id', config.id);
+    DOM.close[config.closeButton ? 'show' : 'hide']();
     that.config = config;
     that.title(config.title);
     that.content(config.content);
     that.button(config.button);
-    that.setStyle({'width': config.width, 'height': config.height});
-    that.setId();
+    that.size(config.width, config.height);
     that.position();
-    that.DOM.close[config.closeButton ? 'show' : 'hide']();
-    setMask();
-    
     return that;
   };
   
@@ -51,7 +50,7 @@
   };
   
   pt.content = function(html) {
-    this.DOM.content.empty()[typeof html === "object" ? "append" : "html"](html);
+    this.DOM.content.empty()[typeof html === 'object' ? 'append' : 'html'](html);
     return this;
   };
   
@@ -77,15 +76,16 @@
     return that;
   };
   
+  // 设置［内容区域］尺寸
+  pt.size = function(w, h) {
+    this.DOM.content.css({'width': w, 'height': h});
+  };
+  
   pt.setStyle = function(obj) {
     return this.DOM.main.css(obj);
   };
   
-  pt.setId = function() {
-    this.DOM.main.attr('id', this.config.id);
-  };
-  
-  // 居中
+  // 居中处理
   pt.center = function() {
     var $main = this.DOM.main,
         fixed = this.config.fixed;
@@ -107,7 +107,8 @@
     this.__eProp = {'top': style.top, 'opacity': 1};
     $main.css(style);
   };
-    
+  
+  // 设定窗口位置
   pt.position = function() {
     var align = this.config.align,
         _align = $.isFunction(align) ? align.call(this) : align;
@@ -162,13 +163,23 @@
     return that;
   };
   
-  // 移除
+  // 移除（销毁）窗口
   pt.remove = function() {
     var that = this,
       DOM = that.DOM;
     DOM.main.off().remove();
     setMask();
     delete _instances[that.config.id];
+  };
+  
+  // 建议只通过此方法在窗口中绑定事件以备统一卸载
+  pt.addEventListener = function(type, selector, fn) {
+    this.DOM.main.on(type, selector, fn);
+  };
+  
+  // 查找窗口内的 DOM 元素
+  pt.find = function(selector) {
+    return $(selector, this.DOM.main);
   };
   
   pt._createPopup = function() {
@@ -197,14 +208,13 @@
   
   pt._attachEvents = function() {
     var that = this,
-        $main = that.DOM.main,
         prefix = '.' + Popup._CLASS_PREFIX + '-';
     
-    $main.on('click', prefix + 'close', function() {
+    that.addEventListener('click', prefix + 'close', function() {
       that.hide();
     });
     
-    $main.on('click', prefix + 'button', function() {
+    that.addEventListener('click', prefix + 'button', function() {
       var index = this.getAttribute('index');
       that._trigger(index);
     });

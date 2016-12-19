@@ -22,12 +22,15 @@
       Popup._CLASS_PREFIX = 'x-popup';
       var p1 = Popup.create({
         'title': '提示',
-        'content': '<p style="font-size:12px;">这是我们第一个测试窗口</p>',
+        'content': '<p style="font-size:12px;"><a href="#" class="btn-ok">这是</a>我们第一个测试窗口</p>',
+        'mask': true,
         'button': [
           {'text': '确定',
             'focus': true,
             'callback': function() {
-              alert('点击我了');
+              this.title(false);
+              this.content('<p style="font-size:12px;">这是我们第一个测试窗口</p><p style="font-size:12px;">这是我们第二个测试窗口</p>');
+              this.position();
               return false;
             }
           },
@@ -37,14 +40,11 @@
           }
         ],
         'width': '300px',
-        'align': function() {
-          this.setStyle({
-            'right': 0,
-            'bottom': 0
-          });
-          return ['auto', 'auto'];
-        }
+        'height': '100px',
+        'effect': 'fadeY'
       }).show();
+      
+      p1.find('.btn-ok').css('color', 'red');
       
       var tooltipBox = null;
       
@@ -56,7 +56,8 @@
               'title': false,
               'content': '哈哈',
               'closeButton': false,
-              'align': [50]
+              'align': [50],
+              'mask': true
             }).show();
           }
           this.on('mouseover', function(e) {
