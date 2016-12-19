@@ -1,12 +1,4 @@
 /*! define ~/popup/1.0.0/index-debug.css */
-.x-popup-main{
-  position: absolute;
-  border: 1px solid #cccccc;
-  background-color: #ffffff;
-  z-index: 1111;
-  border-radius: 4px;
-}
-
 .x-popup-title{
   font-size: 14px;
   font-weight: bold;
@@ -36,5 +28,19 @@
 }
 
 .x-popup-content{
-  
+  overflow: hidden;
+  padding: 15px;
 }
+
+.x-popup-footer{
+  padding: 15px;
+  text-align: left;
+  background-color: #f1f1f1;
+}
+
+.x-popup-button{
+  display: inline-block;margin-right: 15px;border: 1px solid #b2b2b2;padding: 0 11px;line-height: 24px;height: 24px;color: #333;font-weight: 700;cursor: pointer;font-size: 12px;text-decoration: none;background-color: #f1f1f1;border-radius: 2px;}
+.x-popup-button:hover{background-color: #f7f7f7;color: #333;text-decoration: none;}
+
+.x-popup-button-focus{border: 1px solid #1588db;color: #fff;background-color: #26a1f9;}
+.x-popup-button-focus:hover{background-color: #4cb4ff;color: #fff;text-decoration: none;}
