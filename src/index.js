@@ -26,7 +26,7 @@
   var pt = Popup.prototype;
   
   // 默认显示
-  pt._isVisible = true;
+  pt._visible = true;
   
   pt.init = function(config) {
     var that = this;
@@ -110,23 +110,20 @@
     
   pt.position = function() {
     var align = this.config.align,
-        align = $.isFunction(align) ? align.call(this) : align;
-        
-    if ($.isArray(align) && align.length) {
-      this.DOM.main.css({
-        left: align[0],
-        top: align[1]
-      });
+        _align = $.isFunction(align) ? align.call(this) : align;
+    
+    // 手动设定位置
+    if ($.isArray(_align) && _align.length) {
+      this.setPos(_align[0], _align[_align.length == 1 ? 0 : 1]);
     } else {
+      
+      // 按居中处理
       this.center();
     }
   };
   
   pt.setPos = function(x, y) {
-    this.DOM.main.css({
-      left: x,
-      top: y
-    });
+    this.setStyle({'left': x, 'top': y});
     return this;
   },
   
@@ -135,7 +132,7 @@
     var that = this,
         effect = that.config.effect,
         main = that.DOM.main;
-    that._isVisible = false;
+    that._visible = false;
     if (effect === 'fade') {
       main.fadeOut(600);
     } else if (effect === 'fadeY') {
@@ -149,19 +146,20 @@
   
   // 显示
   pt.show = function() {
-    var effect = this.config.effect,
-        main = this.DOM.main;
-    this._isVisible = true;
+    var that = this,
+        effect = that.config.effect,
+        main = that.DOM.main;
+    that._visible = true;
     if (effect === 'fade') {
       main.fadeIn(600);
     } else if (effect === 'fadeY') {
-      main.css($.extend({}, this.__sProp, {'display': 'block'}));
-      main.animate(this.__eProp, 600);
+      main.css($.extend({}, that.__sProp, {'display': 'block'}));
+      main.animate(that.__eProp, 600);
     } else {
       main.show();
     }
     setMask();
-    return this;
+    return that;
   };
   
   // 移除
@@ -176,8 +174,16 @@
   pt._createPopup = function() {
     var DOM = {},
         classPrefix = Popup._CLASS_PREFIX + '-',
-        defaultStyle = 'position: fixed;border: 1px solid #cccccc;background-color: #ffffff;z-index: 8887;left: 0;top: 0;display: none;';
-        main = $('<div class="' + classPrefix + 'main" style="' + defaultStyle + '" />');
+        style = {
+          'position': 'fixed',
+          'border': '1px solid #cccccc',
+          'background-color': '#ffffff',
+          'z-index': 8887,
+          'left': 0,
+          'top': 0,
+          'display': 'none'
+        },
+        main = $('<div class="' + classPrefix + 'main" />').css(style);
     
     $.each(['close', 'title', 'content', 'footer'], function(index, tag) {
       DOM[tag] = $('<div class="' + classPrefix + tag + '" />').appendTo(main);
@@ -192,13 +198,13 @@
   pt._attachEvents = function() {
     var that = this,
         $main = that.DOM.main,
-        classPrefix = '.' + Popup._CLASS_PREFIX + '-';
+        prefix = '.' + Popup._CLASS_PREFIX + '-';
     
-    $main.on('click', classPrefix + 'close', function() {
+    $main.on('click', prefix + 'close', function() {
       that.hide();
     });
     
-    $main.on('click', classPrefix + 'button', function() {
+    $main.on('click', prefix + 'button', function() {
       var index = this.getAttribute('index');
       that._trigger(index);
     });
@@ -224,7 +230,7 @@
     button: [],
     align: [],
     mask: false,
-    fixed: true,
+    fixed: true, // 默认固定定位
     width: 'auto',
     height: 'auto',
     closeButton: true,
@@ -251,7 +257,7 @@
     var n = 0;
     for(var id in _instances) {
       var ins = _instances[id];
-      ins._isVisible && ins.config.mask && n++;
+      ins._visible && ins.config.mask && n++;
     }
     if (n > 0) {
       if (!Popup._MASK) {

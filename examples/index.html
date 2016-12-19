@@ -37,8 +37,13 @@
           }
         ],
         'width': '300px',
-        'fixed': true,
-        'effect': 'fadeY'
+        'align': function() {
+          this.setStyle({
+            'right': 0,
+            'bottom': 0
+          });
+          return ['auto', 'auto'];
+        }
       }).show();
       
       var tooltipBox = null;
@@ -50,10 +55,9 @@
               'id': 'tooltipBox',
               'title': false,
               'content': '哈哈',
-              'effect': 'fade',
-              'align': [0, 0],
-              'closeButton': false
-            });
+              'closeButton': false,
+              'align': [50]
+            }).show();
           }
           this.on('mouseover', function(e) {
             var text = this.title;
