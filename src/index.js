@@ -168,8 +168,8 @@
     var that = this,
       DOM = that.DOM;
     DOM.main.off().remove();
-    setMask();
     delete _instances[that.config.id];
+    setMask();
   };
   
   // 建议只通过此方法在窗口中绑定事件以备统一卸载
