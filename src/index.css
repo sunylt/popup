@@ -1,4 +1,7 @@
-
+.x-popup-main{
+  border-radius: 5px;
+  overflow: hidden;
+}
 .x-popup-title{
   font-size: 14px;
   font-weight: bold;

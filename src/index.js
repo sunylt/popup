@@ -1,4 +1,3 @@
-
 (function(global, factory) {
   if (typeof define === 'function') {
     define(function(require) {
@@ -18,6 +17,18 @@
   // 储存所有创建的窗口
   var _instances = {};
   
+  var style = doc.createElement('style');
+  var defaultStyle = 'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}';
+
+  if ('styleSheet' in style) {
+      style.setAttribute('type', 'text/css');
+      style.styleSheet.cssText = defaultStyle;
+  } else {
+      style.innerHTML = defaultStyle;
+  }
+
+  doc.getElementsByTagName('head')[0].appendChild(style);
+    
   function Popup() {
     this._createPopup();
     this._attachEvents();
@@ -85,41 +96,39 @@
     return this.DOM.main.css(obj);
   };
   
-  // 居中处理
-  pt.center = function() {
+  // 左右居中处理
+  pt.horizontalCenter = function() {
     var $main = this.DOM.main,
-        fixed = this.config.fixed;
-    
-    var width = $main.width(),
-        height = $main.height(),
-        winHeight = $win.height();
+        width = $main.width();
         
-    var style = {
+    $main.css({
       'left': '50%',
-      'margin-left': -(width * 0.5)
-    };
-    
-    style.top = fixed ? '50%' : (winHeight - height) * 0.5 + $doc.scrollTop();
-    style.marginTop = fixed ? - (height * 0.5) : 0;
-    style.position = fixed ? 'fixed' : 'absolute';
-    
-    this.__sProp = {'top': this.config.fixed ? 0 : $doc.scrollTop(), 'opacity': 0};
-    this.__eProp = {'top': style.top, 'opacity': 1};
-    $main.css(style);
+      'marginLeft': -(width * 0.5)
+    });
+  };
+  
+  // 上下居中处理
+  pt.verticalCenter = function() {
+    if (this._visible) {
+      var o = this.initPosY();
+      this.DOM.main.css('top', o.endProp.top);
+    }
   };
   
   // 设定窗口位置
   pt.position = function() {
-    var align = this.config.align,
+    var config = this.config,
+        align = config.align,
         _align = $.isFunction(align) ? align.call(this) : align;
     
+    config.fixed && this.setStyle({'position': 'fixed'});
+
     // 手动设定位置
     if ($.isArray(_align) && _align.length) {
       this.setPos(_align[0], _align[_align.length == 1 ? 0 : 1]);
     } else {
-      
-      // 按居中处理
-      this.center();
+      this.horizontalCenter();
+      this.verticalCenter();
     }
   };
   
@@ -133,35 +142,66 @@
     var that = this,
         effect = that.config.effect,
         main = that.DOM.main;
-    that._visible = false;
-    if (effect === 'fade') {
-      main.fadeOut(600);
-    } else if (effect === 'fadeY') {
-      main.animate(that.__sProp, 600, function() {this.style.display = 'none'});
+    if (effect) {
+      this.applyHideEffect(effect);
     } else {
       main.hide();
     }
+    that._visible = false;
     setMask();
     return that;
   };
   
   // 显示
   pt.show = function() {
-    var that = this,
-        effect = that.config.effect,
-        main = that.DOM.main;
-    that._visible = true;
-    if (effect === 'fade') {
-      main.fadeIn(600);
-    } else if (effect === 'fadeY') {
-      main.css($.extend({}, that.__sProp, {'display': 'block'}));
-      main.animate(that.__eProp, 600);
-    } else {
-      main.show();
-    }
+    this.applyShowEffect();
+    this.setStyle({'display': 'block'});
+    this._visible = true;
     setMask();
-    return that;
+    return this;
   };
+  
+  pt.applyHideEffect = function(effect) {
+    var o = this.initPosY();
+    effect = o ? effect : 'fade';
+    if (effect === 'fade') {
+      this.DOM.main.animate({'opacity': 0}, 600, function() {this.style.display = 'none'});
+    } else if (effect === 'fadeY') {
+      this.DOM.main.animate(o.startProp, 600, function() {this.style.display = 'none'});
+    }
+  };
+  
+  pt.applyShowEffect = function() {
+    if (this._visible) {
+      return;
+    }
+    var effect = this.config.effect,
+        o = this.initPosY();
+    effect = o ? effect : 'fade';
+    if (effect === 'fade') {
+      var style = {'opacity': 0};
+      o && (style.top = o.endProp.top);
+      this.setStyle(style).animate({'opacity': 1}, 600);
+    } else if (effect === 'fadeY') {
+      this.setStyle(o.startProp).animate(o.endProp, 600);
+    }
+  };
+
+  pt.initPosY = function() {
+    var config = this.config,
+        fixed = config.fixed,
+        main = this.DOM.main,
+        height = main.outerHeight(),
+        winHeight = $win.height(),
+        scrollTop = $doc.scrollTop(),
+        isSetPos = config.align.length, // 没有指定位置
+        obj = {};
+        
+    fixed && !isSetPos && main.css('marginTop', - height * 0.5);
+    obj.startProp = {'top': fixed ? 0 : scrollTop, 'opacity': 0};
+    obj.endProp = {'top': fixed ? '50%' : (winHeight - height) * 0.5 + scrollTop, 'opacity': 1};
+    return !isSetPos ? obj : null;
+  },
   
   // 移除（销毁）窗口
   pt.remove = function() {
@@ -184,24 +224,16 @@
   
   pt._createPopup = function() {
     var DOM = {},
-        classPrefix = Popup._CLASS_PREFIX + '-',
-        style = {
-          'position': 'fixed',
-          'border': '1px solid #cccccc',
-          'background-color': '#ffffff',
-          'z-index': 8887,
-          'left': 0,
-          'top': 0,
-          'display': 'none'
-        },
-        main = $('<div class="' + classPrefix + 'main" />').css(style);
+        classPrefix = Popup._CLASS_PREFIX + '-';
     
+    var main = doc.createElement('dialog');
+
     $.each(['close', 'title', 'content', 'footer'], function(index, tag) {
       DOM[tag] = $('<div class="' + classPrefix + tag + '" />').appendTo(main);
     });
     
     DOM.close.text('×');
-    DOM.main = main.appendTo(body);
+    DOM.main = $(main).appendTo(body);
 
     this.DOM = DOM;
   };
@@ -227,14 +259,14 @@
   };
   
   // DOM HTML 类名，如需要可修改
-  Popup._CLASS_PREFIX = 'x-popup';
+  Popup._CLASS_PREFIX = 'dialog';
   
   // 公共遮罩层
   Popup._MASK = null;
   
   // 默认设置
   Popup._DEFAULTS = {
-    id: Popup._CLASS_PREFIX + '-default',
+    id: Popup._CLASS_PREFIX + '-base',
     title: '',
     content: '',
     button: [],
