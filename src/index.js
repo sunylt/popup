@@ -18,7 +18,7 @@
   var _instances = {};
   
   var style = doc.createElement('style');
-  var defaultStyle = 'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}';
+  var defaultStyle = 'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}dialog .dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;}dialog .dialog-content{padding:1em 0;}';
 
   if ('styleSheet' in style) {
       style.setAttribute('type', 'text/css');
@@ -50,7 +50,6 @@
     that.content(config.content);
     that.button(config.button);
     that.size(config.width, config.height);
-    that.position();
     return that;
   };
   
@@ -98,10 +97,9 @@
   
   // 左右居中处理
   pt.horizontalCenter = function() {
-    var $main = this.DOM.main,
-        width = $main.width();
-        
-    $main.css({
+    var main = this.DOM.main,
+        width = main.width();  
+    main.css({
       'left': '50%',
       'marginLeft': -(width * 0.5)
     });
@@ -109,10 +107,11 @@
   
   // 上下居中处理
   pt.verticalCenter = function() {
-    if (this._visible) {
-      var o = this.initPosY();
-      this.DOM.main.css('top', o.endProp.top);
-    }
+    var main = this.DOM.main,
+        fixed = this.config.fixed,
+        height = main.outerHeight();
+    fixed && main.css('marginTop', - height * 0.5);
+    main.css('top', fixed ? '50%' : ($win.height() - height) * 0.5 + $doc.scrollTop());
   };
   
   // 设定窗口位置
@@ -139,69 +138,20 @@
   
   // 隐藏
   pt.hide = function() {
-    var that = this,
-        effect = that.config.effect,
-        main = that.DOM.main;
-    if (effect) {
-      this.applyHideEffect(effect);
-    } else {
-      main.hide();
-    }
-    that._visible = false;
-    setMask();
-    return that;
-  };
-  
-  // 显示
-  pt.show = function() {
-    this.applyShowEffect();
-    this.setStyle({'display': 'block'});
-    this._visible = true;
+    this._visible = false;
+    this.DOM.main.hide();
     setMask();
     return this;
   };
   
-  pt.applyHideEffect = function(effect) {
-    var o = this.initPosY();
-    effect = o ? effect : 'fade';
-    if (effect === 'fade') {
-      this.DOM.main.animate({'opacity': 0}, 600, function() {this.style.display = 'none'});
-    } else if (effect === 'fadeY') {
-      this.DOM.main.animate(o.startProp, 600, function() {this.style.display = 'none'});
-    }
+  // 显示
+  pt.show = function() {
+    this._visible = true;
+    this.DOM.main[0].style.display = 'block'; // .show() 对dialog标签不起作用
+    this.position();
+    setMask();
+    return this;
   };
-  
-  pt.applyShowEffect = function() {
-    if (this._visible) {
-      return;
-    }
-    var effect = this.config.effect,
-        o = this.initPosY();
-    effect = o ? effect : 'fade';
-    if (effect === 'fade') {
-      var style = {'opacity': 0};
-      o && (style.top = o.endProp.top);
-      this.setStyle(style).animate({'opacity': 1}, 600);
-    } else if (effect === 'fadeY') {
-      this.setStyle(o.startProp).animate(o.endProp, 600);
-    }
-  };
-
-  pt.initPosY = function() {
-    var config = this.config,
-        fixed = config.fixed,
-        main = this.DOM.main,
-        height = main.outerHeight(),
-        winHeight = $win.height(),
-        scrollTop = $doc.scrollTop(),
-        isSetPos = config.align.length, // 没有指定位置
-        obj = {};
-        
-    fixed && !isSetPos && main.css('marginTop', - height * 0.5);
-    obj.startProp = {'top': fixed ? 0 : scrollTop, 'opacity': 0};
-    obj.endProp = {'top': fixed ? '50%' : (winHeight - height) * 0.5 + scrollTop, 'opacity': 1};
-    return !isSetPos ? obj : null;
-  },
   
   // 移除（销毁）窗口
   pt.remove = function() {
@@ -227,8 +177,9 @@
         classPrefix = Popup._CLASS_PREFIX + '-';
     
     var main = doc.createElement('dialog');
+    var tags = ['close', 'title', 'content', 'footer'];
 
-    $.each(['close', 'title', 'content', 'footer'], function(index, tag) {
+    $.each(tags, function(index, tag) {
       DOM[tag] = $('<div class="' + classPrefix + tag + '" />').appendTo(main);
     });
     
@@ -303,7 +254,7 @@
     }
     if (n > 0) {
       if (!Popup._MASK) {
-        Popup._MASK = createMask();      
+        Popup._MASK = createMask(Popup._CLASS_PREFIX + '-mask');      
       }
       Popup._MASK.show();
     } else {
@@ -314,7 +265,7 @@
   }
   
   function createMask(clsName) {
-    var style = {'width': '100%', 'height': '100%', 'position': 'fixed', 'opacity': .5, 'background-color': '#000000', 'left': 0, 'top': 0, 'right': 0, 'bottom': 0},
+    var style = {'width': '100%', 'height': '100%', 'position': 'fixed', 'opacity': .3, 'background': '#000000', 'left': 0, 'top': 0, 'right': 0, 'bottom': 0},
       str = (clsName ? 'class="' + clsName + '"' : '');
     
     return $('<div '+ str +' />').css(style).appendTo(body);

@@ -53,7 +53,7 @@
       var p1 = Popup.create({
         'title': '提示',
         'content': '<p style="font-size:12px;margin:0;padding:0;"><a href="#" class="btn-ok">这是</a>我们第一个测试窗口测试窗口测试窗口测试窗口</p>',
-        'mask': false,
+        'mask': true,
         'button': [
           {'text': '确定',
             'focus': true,
@@ -68,10 +68,8 @@
             'callback': function() {
             }
           }
-        ],
-        'fixed': false,
-        'effect': 'fadeY'
-      });
+        ]
+      }).show();
       
       $('.btn').on('click', function() {
         p1.show();
@@ -85,13 +83,13 @@
         'fixed': false,
         'effect': 'fade',
         'align': [0]
-      }).show();
+      }).show();
       
       var p3 = Popup.create({
         'id': 'test3',
         'title': false,
         'content': '右下角的工具',
-        'effect': 'fadeY',
+        'effect': '',
         'fixed': true,
         'align': [100]
       }).show();
