@@ -6,7 +6,7 @@
   
   </head>
   <body>
-    
+
     <button>显示</button>
     
     <button>隐藏</button>
@@ -52,14 +52,15 @@
 
       var p1 = Popup.create({
         'title': '提示',
-        'content': '<p style="font-size:12px;margin:0;padding:0;"><a href="#" class="btn-ok">这是</a>我们第一个测试窗口测试窗口测试窗口测试窗口</p>',
+        'content': '<p style="margin:0;padding:0;"><a href="#" class="btn-ok">这是</a>我们第一个测试窗口测试窗口测试窗口测试窗口</p><div style="width:290px;height:100px;background:red;"></div>',
         'mask': true,
+        'width': '280px',
         'button': [
           {'text': '确定',
             'focus': true,
             'callback': function() {
               this.title(false);
-              this.content('<p style="font-size:12px;">这是我们第一个测试窗口</p><p style="font-size:12px;">这是我们第二个测试窗口</p>');
+              this.content('<p style="font-size:12px;">这是我们第一个测试窗口这是我们第一个测试窗口</p><p style="font-size:12px;">这是我们第二个测试窗口</p>');
               this.position();
               return false;
             }
@@ -69,10 +70,10 @@
             }
           }
         ]
-      }).show();
+      }).open();
       
       $('.btn').on('click', function() {
-        p1.show();
+        p1.open();
         return false;
       });
 
@@ -83,16 +84,22 @@
         'fixed': false,
         'effect': 'fade',
         'align': [0]
-      }).show();
+      }).open();
       
       var p3 = Popup.create({
-        'id': 'test3',
+        'id': 'confirmBox',
         'title': false,
         'content': '右下角的工具',
         'effect': '',
         'fixed': true,
-        'align': [100]
-      }).show();
+        'align': function() {
+          this.setStyle({
+            'right': 0,
+            'bottom': 0
+          });
+          return ['auto', 'auto'];
+        }
+      }).open();
       
     </script>
   </body>

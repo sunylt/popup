@@ -17,14 +17,21 @@
   // 储存所有创建的窗口
   var _instances = {};
   
+  // 公共遮罩层
+  var _mask = null;
+  
   var style = doc.createElement('style');
-  var defaultStyle = 'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}dialog .dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;}dialog .dialog-content{padding:1em 0;}';
+  var defaultStyle = 
+    'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}\r' + 
+    'dialog .dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;padding:0 0.3em;}\r' +
+    'dialog .dialog-content{padding:1em 0;overflow:auto;}\r' +
+    'dialog .dialog-button{text-decoration:none;margin-right:15px;font-size:14px;color:#333;}\r';
 
   if ('styleSheet' in style) {
-      style.setAttribute('type', 'text/css');
-      style.styleSheet.cssText = defaultStyle;
+    style.setAttribute('type', 'text/css');
+    style.styleSheet.cssText = defaultStyle;
   } else {
-      style.innerHTML = defaultStyle;
+    style.innerHTML = defaultStyle;
   }
 
   doc.getElementsByTagName('head')[0].appendChild(style);
@@ -137,7 +144,7 @@
   },
   
   // 隐藏
-  pt.hide = function() {
+  pt.close = function() {
     this._visible = false;
     this.DOM.main.hide();
     setMask();
@@ -145,7 +152,7 @@
   };
   
   // 显示
-  pt.show = function() {
+  pt.open = function() {
     this._visible = true;
     this.DOM.main[0].style.display = 'block'; // .show() 对dialog标签不起作用
     this.position();
@@ -194,7 +201,7 @@
         prefix = '.' + Popup._CLASS_PREFIX + '-';
     
     that.addEventListener('click', prefix + 'close', function() {
-      that.hide();
+      that.close();
     });
     
     that.addEventListener('click', prefix + 'button', function() {
@@ -206,14 +213,11 @@
   
   pt._trigger = function(i) {
     var fn = this.config._callbacks[i];
-    return typeof fn !== 'function' || fn.call(this) !== false ? this.hide() : this;
+    return typeof fn !== 'function' || fn.call(this) !== false ? this.close() : this;
   };
   
   // DOM HTML 类名，如需要可修改
   Popup._CLASS_PREFIX = 'dialog';
-  
-  // 公共遮罩层
-  Popup._MASK = null;
   
   // 默认设置
   Popup._DEFAULTS = {
@@ -223,7 +227,7 @@
     button: [],
     align: [],
     mask: false,
-    fixed: true, // 默认固定定位
+    fixed: false,
     width: 'auto',
     height: 'auto',
     closeButton: true,
@@ -253,22 +257,17 @@
       ins._visible && ins.config.mask && n++;
     }
     if (n > 0) {
-      if (!Popup._MASK) {
-        Popup._MASK = createMask(Popup._CLASS_PREFIX + '-mask');      
-      }
-      Popup._MASK.show();
+      _mask = _mask || createMask(Popup._CLASS_PREFIX + '-mask');      
+      _mask.fadeIn();
     } else {
-      if (Popup._MASK) {
-        Popup._MASK.hide();
-      }
+      _mask && _mask.hide();
     }
   }
   
   function createMask(clsName) {
-    var style = {'width': '100%', 'height': '100%', 'position': 'fixed', 'opacity': .3, 'background': '#000000', 'left': 0, 'top': 0, 'right': 0, 'bottom': 0},
-      str = (clsName ? 'class="' + clsName + '"' : '');
+    var style = {'width': '100%', 'height': '100%', 'position': 'fixed', 'opacity': .3, 'background': '#000000', 'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'display': 'none'};
     
-    return $('<div '+ str +' />').css(style).appendTo(body);
+    return $('<div />').addClass(clsName).css(style).prependTo(body);
   }
   
   return Popup;

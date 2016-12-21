@@ -9,7 +9,6 @@
   },
   "spm": {
     "output": [
-      "index.css",
       "index.js"
     ]
   },
