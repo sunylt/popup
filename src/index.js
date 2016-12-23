@@ -23,7 +23,7 @@
   var style = doc.createElement('style');
   var defaultStyle = 
     'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}\r' + 
-    'dialog .dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;padding:0 0.3em;}\r' +
+    'dialog .dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;padding:0 0.3em;font-size:1.3em;}\r' +
     'dialog .dialog-content{padding:1em 0;overflow:auto;}\r' +
     'dialog .dialog-button{text-decoration:none;margin-right:15px;font-size:14px;color:#333;}\r';
 
@@ -135,6 +135,7 @@
         that.horizontalCenter();
         that.verticalCenter();
       }
+      return that;
     },
     
     setPos: function(x, y) {
@@ -150,12 +151,13 @@
       that._visible = false;
       if (effect) style['opacity'] = 0;
       that.DOM.main.animate(style, effect, function() {this.style.display = 'none'});
+      that.hasModal = false;
       setMask();
       return that;
     },
     
     // 显示
-    open: function() {
+    show: function(ignoreMask) {
       var that = this,
           effect = that.config.effect,
           style = {'display': 'block'};
@@ -163,8 +165,15 @@
       if (effect) style['opacity'] = 0;
       that.DOM.main.css(style).animate(effect && {'opacity': 1}, effect);
       that.position();
-      setMask();
+      !ignoreMask && setMask();
       return that;
+    },
+    
+    showModal: function() {
+      _mask = _mask || createMask();
+      _mask.is(':hidden') && _mask.fadeIn();
+      this.hasModal = true;
+      return this.show(true); // 为避免 mask 设置混乱，调用showModal 的时候忽略 config 的 mask 设置
     },
     
     // 移除（销毁）窗口
@@ -263,13 +272,15 @@
     var n = 0;
     for(var id in _instances) {
       var ins = _instances[id];
-      ins._visible && ins.config.mask && n++;
+      if (ins._visible && ins.config.mask || ins.hasModal) {
+        n++
+      }
     }
     if (n > 0) {
       _mask = _mask || createMask(Popup._CLASS_PREFIX + '-mask');      
       _mask.fadeIn();
     } else {
-      _mask && _mask.hide();
+      _mask && _mask.fadeOut();
     }
   }
   
