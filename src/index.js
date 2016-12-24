@@ -23,9 +23,11 @@
   var style = doc.createElement('style');
   var defaultStyle = 
     'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}\r' + 
-    'dialog .dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;padding:0 0.3em;font-size:1.3em;}\r' +
-    'dialog .dialog-content{padding:1em 0;overflow:auto;}\r' +
-    'dialog .dialog-button{text-decoration:none;margin-right:15px;font-size:14px;color:#333;}\r';
+    '.dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;padding:0 0.3em;font-size:1.3em;}\r' +
+    '.dialog-content{padding:1em 0;overflow:auto;}\r' +
+    '.dialog-button{text-decoration:none;margin-right:15px;color:#777;}\r' +
+    '.dialog-button-focus{color: #333;}\r' +
+    '.dialog-mask{width:100%;height:100%;position:fixed;opacity:.3;background:#000000;left:0;top:0;right:0;bottom:0;display:none}';
 
   if ('styleSheet' in style) {
     style.setAttribute('type', 'text/css');
@@ -100,23 +102,19 @@
       return this.DOM.main.css(obj);
     },
     
-    // 左右居中处理
-    horizontalCenter: function() {
-      var main = this.DOM.main,
-          width = main.width();  
-      main.css({
-        'left': '50%',
-        'marginLeft': -(width * 0.5)
-      });
-    },
-    
-    // 上下居中处理
-    verticalCenter: function() {
-      var main = this.DOM.main,
-          fixed = this.config.fixed,
+    // 居中处理
+    center: function() {
+      var that = this,
+          main = that.DOM.main,
+          fixed = that.config.fixed,
+          width = main.outerWidth(),
           height = main.outerHeight();
-      fixed && main.css('marginTop', - height * 0.5);
-      main.css('top', fixed ? '50%' : ($win.height() - height) * 0.5 + $doc.scrollTop());
+      
+      var style = {'left': '50%', 'marginLeft': - width * 0.5};
+      style['marginTop'] = fixed ? - height * 0.5 : '';
+      style['top'] = fixed ? '50%' : ($win.height() - height) * 0.5 + $doc.scrollTop();
+      
+      main.css(style);
     },
     
     // 设定窗口位置
@@ -132,8 +130,7 @@
       if ($.isArray(_align) && _align.length) {
         that.setPos(_align[0], _align[_align.length == 1 ? 0 : 1]);
       } else {
-        that.horizontalCenter();
-        that.verticalCenter();
+        that.center();
       }
       return that;
     },
@@ -161,6 +158,7 @@
       var that = this,
           effect = that.config.effect,
           style = {'display': 'block'};
+      if (that._visible) return that;
       that._visible = true;
       if (effect) style['opacity'] = 0;
       that.DOM.main.css(style).animate(effect && {'opacity': 1}, effect);
@@ -170,9 +168,8 @@
     },
     
     showModal: function() {
-      _mask = _mask || createMask();
-      _mask.is(':hidden') && _mask.fadeIn();
       this.hasModal = true;
+      setMask();
       return this.show(true); // 为避免 mask 设置混乱，调用showModal 的时候忽略 config 的 mask 设置
     },
     
@@ -186,8 +183,14 @@
     },
     
     // 建议只通过此方法在窗口中绑定事件以备统一卸载
-    addEventListener: function(type, selector, fn) {
-      this.DOM.main.on(type, selector, fn);
+    addEventListener: function(types, selector, fn) {
+      this.DOM.main.on(types, selector, fn);
+      return this;
+    },
+    
+    removeEventListener: function(types, selector, fn) {
+      this.DOM.main.off(types, selector, fn);
+      return this;
     },
     
     // 查找窗口内的 DOM 元素
@@ -267,6 +270,21 @@
     return _instances[id];
   };
   
+  Popup.confirm = function(title, msg, ok_fn, config) {
+    var options = {
+      'id': 'confirm-box',
+      'title': title,
+      'content': msg,
+      'mask': true,
+      'button': [
+        {'text': '确 定', 'focus': true, 'callback': ok_fn},
+        {'text': '取 消'}
+      ]
+    };
+    options = $.extend(options, config || {});
+    return Popup.create(options).show();
+  };
+  
   // Helper
   function setMask() {
     var n = 0;
@@ -285,9 +303,7 @@
   }
   
   function createMask(clsName) {
-    var style = {'width': '100%', 'height': '100%', 'position': 'fixed', 'opacity': .3, 'background': '#000000', 'left': 0, 'top': 0, 'right': 0, 'bottom': 0, 'display': 'none'};
-    
-    return $('<div />').addClass(clsName).css(style).prependTo(body);
+    return $('<div />').addClass(clsName).prependTo(body);
   }
   
   return Popup;

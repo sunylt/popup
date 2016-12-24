@@ -80,7 +80,7 @@
         'content': '<p>我是左上角的段落，会自动控制宽度的哦</p>',
         'fixed': false,
         'effect': 400
-      }).showModal();
+      });
       
       var p3 = Popup.create({
         'id': 'confirm-box',
@@ -97,9 +97,14 @@
         }
       });
       
+      Popup.confirm('提示', '<div style="width:260px;">您删除的信息将无法恢复！<div>', function() {
+        alert('好的');
+        return false;
+      });
+      
         var dialog = '';
           for(var key in document.getElementsByTagName('dialog')[0]) {
-            console.log(key);
+           // console.log(key);
           }
       
     </script>
