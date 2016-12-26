@@ -203,7 +203,7 @@
       var DOM = {},
           classPrefix = Popup._CLASS_PREFIX + '-';
       
-      var main = doc.createElement('dialog');
+      var main = doc.createElement('DIALOG');
       var tags = ['close', 'title', 'content', 'footer'];
   
       $.each(tags, function(index, tag) {
