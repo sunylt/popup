@@ -19,7 +19,7 @@ var box = Popup.create({
   'height': 'auto', // 设置 ［内容区域］高度
   'fixed': true, // 是否固定定位现实
   'align':[left, top], // 设置窗口位置，不设置则按上下左右居中处理，可以设置为函数，注意返回数组
-  'effect': '', // 设置窗口显示隐藏动效，默认没有，fade为淡出，fadeY为由上下淡出
+  'effect': '', // 设置窗口显示隐藏动效时间
 }).show(); // .create()方法创建的窗口默认隐藏，需要调用.show()方法显示出来
 ```
 
