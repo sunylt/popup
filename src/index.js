@@ -13,6 +13,8 @@
       body = doc.body,
       $win = $(window),
       $doc = $(doc);
+      
+  var IS_IE6 = navigator.userAgent.indexOf('MSIE 6.0') > 0;
   
   // 储存所有创建的窗口
   var _instances = {};
@@ -22,12 +24,11 @@
   
   var style = doc.createElement('style');
   var defaultStyle = 
-    'dialog{position:absolute;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}\r' + 
+    'dialog{position:absolute;_position:absolute !important;border:2px solid #000;background-color:#ffffff;z-index:8887;left:0;top:0;right:auto;display:none;padding:1em;}\r' + 
     '.dialog-close{position:absolute;right:0.5em;top:0.5em;cursor:pointer;padding:0 0.3em;font-size:1.3em;}\r' +
     '.dialog-content{padding:1em 0;overflow:auto;}\r' +
-    '.dialog-button{text-decoration:none;margin-right:15px;color:#777;}\r' +
-    '.dialog-button-focus{color: #333;}\r' +
-    '.dialog-mask{width:100%;height:100%;position:fixed;opacity:.3;background:#000000;left:0;top:0;right:0;bottom:0;display:none}';
+    '.dialog-button{text-decoration:none;margin-right:15px;color:#0167ff;}\r' +
+    '.dialog-mask{width:100%;height:100%;position:fixed;_position:absolute !important;opacity:.3;_filter:alpha(opacity=30) !important;background:#000000;left:0;top:0;right:0;bottom:0;display:none}';
 
   if ('styleSheet' in style) {
     style.setAttribute('type', 'text/css');
@@ -275,6 +276,8 @@
       'id': 'confirm-box',
       'title': title,
       'content': msg,
+      'closeButton': false,
+      'fixed': true,
       'mask': true,
       'button': [
         {'text': '确 定', 'focus': true, 'callback': ok_fn},
@@ -295,10 +298,11 @@
       }
     }
     if (n > 0) {
-      _mask = _mask || createMask(Popup._CLASS_PREFIX + '-mask');      
-      _mask.fadeIn();
+      var style = IS_IE6 ? {'height': Math.max($win.height(), $doc.height()), 'display': 'block'} : '';
+      _mask = _mask || createMask(Popup._CLASS_PREFIX + '-mask');
+      _mask[IS_IE6 ? 'css' : 'fadeIn'](style);
     } else {
-      _mask && _mask.fadeOut();
+      _mask && _mask[IS_IE6 ? 'hide' : 'fadeOut']();
     }
   }
   
