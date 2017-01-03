@@ -42,6 +42,7 @@
         'title': '提示',
         'content': '<p style="margin:0;padding:0;"><a href="#" class="btn-ok">这是</a>我们第一个测试窗口测试窗口测试窗口测试窗口</p><div style="width:290px;height:100px;background:red;"></div>',
         'effect': 400,
+        'fixed': true,
         'button': [
           {'text': '确定',
             'focus': true,
@@ -68,7 +69,7 @@
         'id': 'loading-box',
         'title': false,
         'content': '<p>我是左上角的段落，会自动控制宽度的哦</p>',
-        'fixed': false,
+        'fixed': true,
         'effect': 400
       });
       
@@ -92,6 +93,11 @@
         return false;
       });
       
+
+        var dialog = '';
+          for(var key in document.getElementsByTagName('dialog')[0]) {
+          }
+
     </script>
   </body>
 </html>
